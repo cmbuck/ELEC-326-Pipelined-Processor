@@ -38,9 +38,26 @@ module pipeReg1(clk, pcIn, pcOut, instrIn, instrOut);
 endmodule
 
 module pipeReg2();
+/*	Fields in this register:
+ *	PC, Control, (rs), (rt), rs, rt, rd, addr info
+ *  
+ */
 endmodule
 
-module pipeReg3();
+module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt);
+    input wbEnable, memRead, memWrite, iType, isBranch, isJump;
+    input [31:0] aluRes;
+    input [4:0] inRT;
+
+    output dataMem;
+    output [4:0] outRT;
+    
+    always @(posedge) begin
+        
+    
+        
+    
+    
 endmodule
 
 module pipeReg4(clk,
