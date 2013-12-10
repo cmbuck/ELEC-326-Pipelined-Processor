@@ -29,6 +29,10 @@ module pipeReg1(clk, pc, instruction);
 endmodule
 
 module pipeReg2();
+/*	Fields in this register:
+ *	PC, Control, (rs), (rt), rs, rt, rd, addr info
+ *  
+ */
 endmodule
 
 module pipeReg3();
