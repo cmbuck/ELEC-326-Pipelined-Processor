@@ -35,7 +35,20 @@ module pipeReg2();
  */
 endmodule
 
-module pipeReg3();
+module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt);
+    input wbEnable, memRead, memWrite, iType, isBranch, isJump;
+    input [31:0] aluRes;
+    input [4:0] inRT;
+
+    output dataMem;
+    output [4:0] outRT;
+    
+    always @(posedge) begin
+        
+    
+        
+    
+    
 endmodule
 
 module pipeReg4();
