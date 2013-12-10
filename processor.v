@@ -21,3 +21,18 @@ initial begin
 
 
 endmodule
+
+module pipeReg1(clk, pc, instruction);
+    input clk;
+    input [31:0] pc;
+
+endmodule
+
+module pipeReg2();
+endmodule
+
+module pipeReg3();
+endmodule
+
+module pipeReg4();
+endmodule
