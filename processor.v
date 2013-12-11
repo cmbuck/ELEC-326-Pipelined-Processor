@@ -58,15 +58,12 @@ initial begin
 
 endmodule
 
-<<<<<<< HEAD
 module pipeReg1(clk, pc, instruction);
     // The following are contained in this module:
     // [31:0] pc
     // [31:0] instruction
     
-=======
 module pipeReg1(clk, pcIn, pcOut, instrIn, instrOut);
->>>>>>> a138b461d95190a7a4f28ae2c30971111f9345b7
     input clk;
     input [`INSTR_BIT_LEN - 1:0] pcIn, instrIn;
     output reg [`INSTR_BIT_LEN - 1:0] pcOut, instrOut;
@@ -79,16 +76,9 @@ module pipeReg1(clk, pcIn, pcOut, instrIn, instrOut);
 endmodule
 
 module pipeReg2();
-<<<<<<< HEAD
     // The following are contained in this module:
     // [31:0] pc
     // [10:0] IDCntrl - aluSet, wSel, aluOp(this guy is 3 bits long), memWrite, rDataSel, rWrite, jmp, br
-=======
-/*	Fields in this register:
- *	PC, Control, (rs), (rt), rs, rt, rd, addr info
- *  
- */
->>>>>>> a138b461d95190a7a4f28ae2c30971111f9345b7
 endmodule
 
 module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt);
@@ -109,20 +99,27 @@ module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt
     
         
     
-    
+    end
 endmodule
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> 50d29acda2494086fa037bf7020021d3e6bc1c85
 module pipeReg4();
     // memCntrl (just write)
     // [31:0] data
     // [4:0] dst
+<<<<<<< HEAD
     
 =======
 >>>>>>> 99000e5cadb137032e1a93480df1ca9ad749a1e9
+=======
+ /*   
+>>>>>>> 50d29acda2494086fa037bf7020021d3e6bc1c85
 module pipeReg4(clk,
                 wbEnableIn, wbEnableOut,
                 memReadIn, memReadOut,
@@ -150,8 +147,8 @@ module pipeReg4(clk,
         isBranchOut <= isBranchIn;
         isJumpOut <= isJumpIn;
     end
+	*/
 
->>>>>>> a138b461d95190a7a4f28ae2c30971111f9345b7
 endmodule
 
 
