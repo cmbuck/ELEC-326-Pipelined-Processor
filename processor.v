@@ -100,26 +100,15 @@ module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt
         
     
     end
-endmodule
+endmodule // pipeReg3
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-=======
->>>>>>> 50d29acda2494086fa037bf7020021d3e6bc1c85
 module pipeReg4();
     // memCntrl (just write)
     // [31:0] data
     // [4:0] dst
-<<<<<<< HEAD
-    
-=======
->>>>>>> 99000e5cadb137032e1a93480df1ca9ad749a1e9
-=======
+
  /*   
->>>>>>> 50d29acda2494086fa037bf7020021d3e6bc1c85
+
 module pipeReg4(clk,
                 wbEnableIn, wbEnableOut,
                 memReadIn, memReadOut,
