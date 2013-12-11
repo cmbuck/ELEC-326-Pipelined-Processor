@@ -1,7 +1,24 @@
 `define REG_ADDR_LEN 5
 `define MEM_WIDTH 32
 `define INSTR_BIT_LEN 32
+
 // Define Symbolic Names for Signals  and Register Fields
+
+/* ALUop goes into the ALU and controls what op it carries out
+ RWrite is essentially WriteEnable and goes into the Reg File
+ ALUSel selects the input to the ALU, chooses b/w AddrInfo and (rt), goes into 
+      MUX just before ALU
+ RDataSel chooses input to data to be written to Reg File, picks b/w DataMem an
+      ALU result in PipeReg3 and goes into MUX just before Data in PipeReg4 
+ WSel chooses between rt and rd to be the register in Reg File written to, goes
+      into MUX before dst in PipeReg3 
+ MemRead tells us whether we want to read from memory or not, goes into datamem
+ MemWrite tells us whether we want to write to memory or not, goes into datamem
+ JMP indicates whether we want to Jump or not, goes into MUX before PC 
+ BR indicates whether we want top branch or not, goes into and gate before mux 
+      before PC  
+ */
+
 
 
 module processor(Clk); 
@@ -60,6 +77,7 @@ module pipeReg3(wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt
     
 endmodule
 
+
 module pipeReg4(clk,
                 wbEnableIn, wbEnableOut,
                 memReadIn, memReadOut,
@@ -89,3 +107,5 @@ module pipeReg4(clk,
     end
 
 endmodule
+
+
