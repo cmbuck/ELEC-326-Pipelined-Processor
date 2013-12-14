@@ -40,9 +40,9 @@ module processor(Clk);
    wire [31:0]  rs_mux_input;
 
 
-   dataMemory DataMemory(MemRead, MemWrite, Address, StoreValue, LoadValue);
+//   dataMemory DataMemory(MemRead, MemWrite, Address, StoreValue, LoadValue);
 
-   alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
+ //  alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
 
 
 
@@ -69,16 +69,20 @@ module IFPipeReg(clk, pcIn, pcOut, instrIn, instrOut);
     end
 endmodule
 
-module IDPipeReg(clk, pcIn, pcOut, aluSetIn, aluSetOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut);
-    input clk, aluSetIn, wSelIn, memWriteIn, rDataSelIn, rWriteIn, jmpIn, brIn;
+module IDPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut);
+    // The following are contained in this module:
+    // [31:0] pc
+    // [10:0] IDCntrl - aluSet, wSel, aluOp(this guy is 3 bits long), memWrite, rDataSel, rWrite, jmp, br
+
+    input clk, aluSelIn, wSelIn, memWriteIn, rDataSelIn, rWriteIn, jmpIn, brIn;
     input [31:0] pcIn;
     input [3:0] aluOpIn;
-    output reg aluSetOut, wSelOut, memWriteOut, rDataSelOut, rWriteOut, jmpOut, brOut;
+    output reg aluSelOut, wSelOut, memWriteOut, rDataSelOut, rWriteOut, jmpOut, brOut;
     output reg [31:0] pcOut;
     output [3:0] aluOpOut;
 
     always @(posedge clk) begin
-        aluSetOut <= aluSetIn;
+        aluSelOut <= aluSelIn;
         pcOut <= pcIn;
         wSelOut <= wSelIn;
         aluSelOut <= aluSelIn;
@@ -89,28 +93,31 @@ module IDPipeReg(clk, pcIn, pcOut, aluSetIn, aluSetOut, wSelIn, wSelOut, aluOpIn
         brOut <= brIn;
     end
 
-    // The following are contained in this module:
-    // [31:0] pc
-    // [10:0] IDCntrl - aluSet, wSel, aluOp(this guy is 3 bits long), memWrite, rDataSel, rWrite, jmp, br
 endmodule
 
-module EXPipeReg(clk, wbEnable, memRead, memWrite, iType, isBranch, isJump, alures, rt);
+module EXPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, resultIn, resultOut, dstIn, dstOut, ddrIn, ddrOut);
     // The following are contained in this module
     // [3:0] ExCntrl - br, memWrite, rDataSel, rWrite
     // [31:0] result
     // [4:0] dst
     // [31:0] ddr
-    input clk, wbEnable, memRead, memWrite, iType, isBranch, isJump;
-    input [31:0] aluRes;
-    input [4:0] inRT;
-
-    output dataMem;
-    output [4:0] outRT;
+    input clk, brIn, memWriteIn, rDataSelIn, rWriteIn;
+    input [31:0] resultIn, ddrIn;
+    input [4:0] dstIn;
+    output reg brOut, memWriteOut, rDataSelOut, rWriteOut;
+    output reg [31:0] resultOut, ddrOut;
+    output reg [4:0] dstOut;
 
     always @(posedge clk) begin
-        
+        brOut <= brIn;
+        memWriteOut <= memWriteIn;
+        rDataSelOut <= rDataSelIn;
+        rWriteOut <= rWriteIn;
+        resultOut <= resultIn;
+        dstOut <= dstIn;
+        ddrOut <= ddrIn;
     end
-endmodule // pipeReg3
+endmodule
 
 module MEMPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
     // memCntrl (just write)
@@ -118,7 +125,7 @@ module MEMPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
     // [2:0] dst
     input clk, memWriteIn;
     input [31:0] dataIn;
-    input [2:0] dstIn;
+    input [5:0] dstIn;
 
     output reg memWriteOut;
     output reg [31:0] dataOut;
@@ -129,7 +136,6 @@ module MEMPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
         dstOut <= dstIn;
         memWriteOut <= memWriteIn;
     end
-
 endmodule
 
 
