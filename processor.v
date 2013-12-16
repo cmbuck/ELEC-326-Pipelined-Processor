@@ -138,4 +138,15 @@ module MEMPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
     end
 endmodule
 
+/* PC Reg */
+module pcReg(clk, PCin, PCout);
+   input clk;
+   input wire [31:0] PCin;
+   output wire [31:0] PCout;
+
+   always @(posedge clk)begin
+      PCout <= PCin;
+   end
+   
+endmodule // PC
 
