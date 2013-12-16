@@ -1,7 +1,7 @@
 /* Only have 2 sizes of 2-input MUXes: 32-bit inputs and 5-bit inputs
  Both of the MUXes are modeled off of the S_regFile MUX_N_Mbit */
 
-module Mux_64_32bit(Select, inData, outData);
+module mux_64_32bit(Select, inData, outData);
 
    /* This mux is to choose b/w register value or address info as input to ALU
     NOTE: when Select is 1, the first input (inData[31:0]) is selected  */
@@ -22,7 +22,7 @@ endmodule // Mux_64_32bit
 
 /* This mux is to choose how to increment PC */
 
-module Mux_3input_32bit(Select, inData, outData);
+module mux_3input_32bit(Select, inData, outData);
 
    input [1:0] Select;
    input [95:0] inData; // 3 inputs, 32bit --> 3*32 = 96
@@ -42,7 +42,7 @@ endmodule // Mux_3input_32bit
 
 /* This mux is to choose which REG to write to in REG_FILE */
 
-module Mux_10_5bit(Select, inData, outData);
+module mux_10_5bit(Select, inData, outData);
    
    input Select;
    input [9:0] inData;
