@@ -11,6 +11,10 @@ input wEnable;
 input  d;
 output reg q;
 
+    initial begin
+        q = 0;
+    end
+
    always @(negedge Clk)
      begin
         if (wEnable)
