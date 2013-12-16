@@ -10,8 +10,9 @@ module processor_TestBench;
 
    initial begin
       Clk = 0;
+      #10;
    end
-
+   
    always @(*) begin
      while ($time < `MAX_SIMULATION_TIME)
        begin
