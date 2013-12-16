@@ -108,7 +108,7 @@ endmodule // Nbit_Reg
 
 
 
-module S_regFile(Clk, SrcRegA, SrcRegB, DestReg, WriteData, WE, DataA, DataB);
+module s_regFile(Clk, SrcRegA, SrcRegB, DestReg, WriteData, WE, DataA, DataB);
 
    input Clk;
    input [`MUX_CNTRL-1:0] SrcRegA, SrcRegB;
