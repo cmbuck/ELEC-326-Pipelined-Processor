@@ -21,30 +21,35 @@
 
 
 
-module processor(Clk);
+module processor(clk);
 
-    input Clk;
-// Instantiate modules making up the processor
+    input clk;
+    // Instantiate modules making up the processor
 
-   wire [11:0]  PipeReg1Bus; //connects output of decoder to PipeReg1
-   wire [2:0]   aluOp; //connected to intput of ALU
-   wire         ALUsel; //connected to mux before ALU
-   wire         WSel;
-   wire         MemRead; //goes into DataMem
-   wire         MemWrite; //goes into DataMem
-   wire [15:0]  AddrInfo_mux_input; //input to MUX before ALU 
-   wire [4:0]   DstReg; //input to DST, output of MUX after rt and rd
-   wire [31:0]  TargetAddr; //output of ALU, input of DDR
-   wire [31:0]  Result; //output of ALU
-   wire [31:0]  rt_mux_input;
-   wire [31:0]  rs_mux_input;
+    wire [31:0]  pc, pcPlusFour, pcIFRegOut;
 
+    wire [31:0]  instruction, instructionIFRegOut;
 
-//   dataMemory DataMemory(MemRead, MemWrite, Address, StoreValue, LoadValue);
+    wire [11:0]  PipeReg1Bus; //connects output of decoder to PipeReg1
+    wire [2:0]   aluOp; //connected to intput of ALU
+    wire         ALUsel; //connected to mux before ALU
+    wire         WSel;
+    wire         MemRead; //goes into DataMem
+    wire         MemWrite; //goes into DataMem
+    wire [15:0]  Immediate; //immediate value in the instruction
+    wire [4:0]   DstReg; //input to DST, output of MUX after rt and rd
+    wire [31:0]  TargetAddr; //output of ALU, input of DDR
+    wire [31:0]  Result; //output of ALU
+    wire [31:0]  rt_mux_input;
+    wire [31:0]  rs_mux_input;
 
- //  alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
+    //dataMemory DataMemory(MemRead, MemWrite, TargetAddr, StoreValue, LoadValue);
+    //alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
 
-
+    insMemory InsMemory(pc, instruction);
+    ifPipeReg IFPipeReg(clk, pcPlusFour, pcIFRegOut, instruction, instructionIFRegOut);
+    pcAdder PCAdder(pc, pcPlusFour);
+    mux_3input_32bit(/*TODO select*/, pcPlusFour, /*TODO something1*/, /*TODO something2*/, /*TODO outData*/);
 
 
     initial begin
@@ -58,7 +63,16 @@ module processor(Clk);
 
 endmodule
 
-module IFPipeReg(clk, pcIn, pcOut, instrIn, instrOut);
+module pcAdder(pcIn, pcOut)
+    input [31:0] pcIn;
+    output [31:0] pcOut;
+
+    always @(*) begin
+        pcOut = pcIn + 4;
+    end
+endmodule
+
+module ifPipeReg(clk, pcIn, pcOut, instrIn, instrOut);
     input clk;
     input [31:0] pcIn, instrIn;
     output reg [31:0] pcOut, instrOut;
@@ -69,7 +83,7 @@ module IFPipeReg(clk, pcIn, pcOut, instrIn, instrOut);
     end
 endmodule
 
-module IDPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut);
+module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut);
     // The following are contained in this module:
     // [31:0] pc
     // [10:0] IDCntrl - aluSet, wSel, aluOp(this guy is 3 bits long), memWrite, rDataSel, rWrite, jmp, br
@@ -95,7 +109,7 @@ module IDPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn
 
 endmodule
 
-module EXPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, resultIn, resultOut, dstIn, dstOut, ddrIn, ddrOut);
+module exPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, resultIn, resultOut, dstIn, dstOut, ddrIn, ddrOut);
     // The following are contained in this module
     // [3:0] ExCntrl - br, memWrite, rDataSel, rWrite
     // [31:0] result
@@ -119,7 +133,7 @@ module EXPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSel
     end
 endmodule
 
-module MEMPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
+module memPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
     // memCntrl (just write)
     // [31:0] data
     // [2:0] dst
