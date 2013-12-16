@@ -36,7 +36,7 @@ module processor(clk);
     wire [15:0]  immediateIFRegOut, immediateIDRegOut;
     wire [25:0]  jumpAddrIDRegOut;
 
-    wire [25:0]  addrInfoOut; //used in the event of a jump
+    wire [25:0]  jumpAddrDecoderOut; //used in the event of a jump
     wire [2:0]   aluOpDecoderOut,  aluOpIDRegOut;
     wire         isWriteRegDecoderOut, isWriteRegIDRegOut;
     wire         isMemReadDecoderOut,  isMemReadIDRegOut,   isMemReadEXRegOut;
@@ -50,6 +50,7 @@ module processor(clk);
     wire [31:0]  rtValRegFileOut, rtValIDRegOut, rtValEXRegOut;
 
     wire [25:0]  addrInfoHTGOut;
+    wire [31:0]  ebrahimOut;
 
     wire [31:0]  aluResultALUOut, aluResultEXRegOut;
     wire [31:0]  targetAddrALUOut, targetAddrEXRegOut;
@@ -74,22 +75,22 @@ module processor(clk);
     assign rsIFRegOut = instructionIFRegOut[25:21];
     assign rtIFRegOut = instructionIFRegOut[20:16];
     assign rdIFRegOut = instructionIFRegOut[15:11];
-    assign immediateIFRegOut = instructionIFRegOut[15:0];
+    //assign immediateIFRegOut = instructionIFRegOut[15:0];
 
-    insDecoder INSDecoder(instructionIFRegOut, addrInfoOut, aluOpDecoderOut, dstRegAddrDecoderOut, isMemReadDecoderOut, isMemWriteDecoderOut, isITypeDecoderOut, isWbEnableDecoderOut, isBranchDecoderOut, isJumpDecoderOut);
+    insDecoder INSDecoder(instructionIFRegOut, jumpAddrDecoderOut, aluOpDecoderOut, dstRegAddrDecoderOut, isMemReadDecoderOut, isMemWriteDecoderOut, isITypeDecoderOut, isWbEnableDecoderOut, isBranchDecoderOut, isJumpDecoderOut);
 
     s_regFile Regfile(clk, rsIFRegOut, rtIFRegOut, dstRegAddrMEMRegOut, regWriteDataMEMRegOut, isWbEnableMEMRegOut, rsValRegFileOut, rtValRegFileOut);
 
     // TODO Clean up isWriteReg because it doesn't do anything
-    idPipeReg IDPipeReg(clk, pcIFRegOut, pcIDRegOut, isITypeDecoderOut, isITypeIDRegOut, isWriteRegDecoderOut, isWriteRegIDRegOut, aluOpDecoderOut, aluOpIDRegOut, isMemWriteDecoderOut, isMemWriteIDRegOut, isMemReadDecoderOut, isMemreadIDRegOut, isWbEnableDecoderOut, isWbEnableIDRegOut, isJumpDecoderOut, isJumpIDRegOut, isBranchDecoderOut, isBranchIDRegOut, rsValRegFileOut, rsValIDRegOut, rtValRegFileOut, rtValIDRegOut, dstRegAddrDecoderOut, dstRegAddrVarmanOut, immediateIFRegOut, immediateIDRegOut, instructionIFRegOut[25:0], jumpAddrIDRegOut);
+    idPipeReg IDPipeReg(clk, pcIFRegOut, pcIDRegOut, isITypeDecoderOut, isITypeIDRegOut, isWriteRegDecoderOut, isWriteRegIDRegOut, aluOpDecoderOut, aluOpIDRegOut, isMemWriteDecoderOut, isMemWriteIDRegOut, isMemReadDecoderOut, isMemReadIDRegOut, isWbEnableDecoderOut, isWbEnableIDRegOut, isJumpDecoderOut, isJumpIDRegOut, isBranchDecoderOut, isBranchIDRegOut, rsValRegFileOut, rsValIDRegOut, rtValRegFileOut, rtValIDRegOut, dstRegAddrDecoderOut, dstRegAddrVarmanOut, jumpAddrDecoderOut[15:0], immediateIDRegOut, jumpAddrDecoderOut, jumpAddrIDRegOut);
 
     // EX section
     // TODO Clean up ebrahim
-    //mux_2input_32bit ebrahim(isITypeIDRegOut, rtValIDRegOut, {{16{immediateIDRegOut[15]}}, immediateIDRegOut}, outData);
+    mux_2input_32bit ebrahim(isITypeIDRegOut, rtValIDRegOut, {{16{immediateIDRegOut[15]}}, immediateIDRegOut}, ebrahimOut);
 
-    mux_2input_26bit honestToGoodness(isJumpIDRegOut, {10'h0, immediateIDRegOut}, jumpAddrIDRegOut, addrInfoHTGOut);
+    mux_2input_26bit honestToGoodness(isJumpIDRegOut, {{10{immediateIDRegOut[15]}}, immediateIDRegOut}, jumpAddrIDRegOut, addrInfoHTGOut);
 
-    alu ALU(aluOpIDRegOut, rsValIDRegOut, rtValIDRegOut, isJumpIDRegOut, isBranchIDRegOut, pcIDRegOut, addrInfoHTGOut, aluResultALUOut, targetAddrALUOut);
+    alu ALU(aluOpIDRegOut, rsValIDRegOut, ebrahimOut, isJumpIDRegOut, isBranchIDRegOut, pcIDRegOut, addrInfoHTGOut, aluResultALUOut, targetAddrALUOut);
 
     //mux_2input_5bit varman(isWriteRegIDRegOut, rtIDRegOut, rdIDRegOut, dstRegAddrVarmanOut);
 
@@ -174,7 +175,6 @@ module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn
         rtOut = 0;
         dstOut = 0;
         pcOut = 0;
-        pcOut = 0;
         aluOpOut = 0;
         immediateOut = 0;
         jumpAddrOut = 0;
@@ -184,7 +184,7 @@ module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn
         aluSelOut <= aluSelIn;
         pcOut <= pcIn;
         wSelOut <= wSelIn;
-        aluSelOut <= aluSelIn;
+        aluOpOut <= aluOpIn;
         memWriteOut <= memWriteIn;
         rDataSelOut <= rDataSelIn;
         rWriteOut <= rWriteIn;
@@ -213,9 +213,15 @@ module exPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSel
     output reg [4:0] dstOut;
 
     initial begin
-        EXPipeReg.brOut = 0;
-        EXPipeReg.jumpOut = 0;
-        EXPipeReg.resultOut = 0;
+        brOut = 0;
+        memWriteOut = 0;
+        rDataSelOut = 0;
+        rWriteOut = 0;
+        jumpOut = 0;
+        resultOut = 0;
+        ddrOut = 0;
+        rtValOut = 0;
+        dstOut = 0;
     end
 
     always @(posedge clk) begin
@@ -242,6 +248,12 @@ module memPipeReg(clk, rWriteIn, rWriteOut, dataIn, dataOut, dstIn, dstOut);
     output reg rWriteOut;
     output reg [31:0] dataOut;
     output reg [4:0] dstOut;
+
+    initial begin
+        rWriteOut = 0;
+        dataOut = 0;
+        dstOut = 0;
+    end
 
     always @(posedge clk) begin
         dataOut <= dataIn;

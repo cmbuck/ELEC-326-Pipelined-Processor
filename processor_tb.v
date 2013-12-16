@@ -1,5 +1,6 @@
 `define MAX_SIMULATION_TIME 800
-
+`define P myProcessor
+`define D INSDecoder
 
 module processor_TestBench;	
 
@@ -32,17 +33,20 @@ module processor_TestBench;
       //end
 
         $display("%x\n", myProcessor.Regfile.reg_array.outInputs);
+      //$display("%x", `P.ALU.writeReg);
 
-
-      $display("IFPipeReg PC:%d, Instr:%x\n", myProcessor.IFPipeReg.pcIn, myProcessor.IFPipeReg.instrIn);
-      //$display("IDPipeReg\n PC:%d aluSel:%d wSel:%d aluOp:%d memWrite:%d rDataSel:%d rWrite:%d jmp:%d br:%d\n\n***********************************\n\n",
-		   //myProcessor.IDPipeReg.pcIn, myProcessor.IDPipeReg.aluSelIn, myProcessor.IDPipeReg.wSelIn, myProcessor.IDPipeReg.aluOpIn, 
-		   //myProcessor.IDPipeReg.memWriteIn, myProcessor.IDPipeReg.rDataSelIn, myProcessor.IDPipeReg.rWriteIn, myProcessor.IDPipeReg.jmpIn, myProcessor.IDPipeReg.brIn);
-      //$display("EXPipeReg\n br:%d memWrite:%d rDataSel:%d rWrite:%d result:%b dst:%d ddr:%x\n\n***********************************\n\n", myProcessor.EXPipeReg.brIn, 
-		   //myProcessor.EXPipeReg.memWriteIn, myProcessor.EXPipeReg.rDataSelIn, myProcessor.EXPipeReg.rWriteIn, myProcessor.EXPipeReg.resultIn, 
-		   //myProcessor.EXPipeReg.dstIn, myProcessor.EXPipeReg.ddrIn);
-      //$display("MEMPipeReg\n memWrite:%d data:%x dst:%d\n\n***********************************\n\n", myProcessor.MEMPipeReg.rWriteIn, myProcessor.MEMPipeReg.dataIn, 
-		   //myProcessor.MEMPipeReg.dstIn); 
+      $display("ins: %x, addrInfo: %x, aluOp: %x, writeReg:%x, memRead:%x, memWrite:%x, iType:%x, wbEnable:%x, isBranch:%x, isJump:%x", `P.`D.instruction, `P.`D.addrInfo, `P.`D.ALUop, `P.`D.writeReg, `P.`D.memRead, `P.`D.memWrite, `P.`D.iType, `P.`D.wbEnable, `P.`D.isBranch, `P.`D.isJump);
+      $display("aluOp: %x, op1: %x, op2: %x, jmp: %x, br: %x, pc %x, addrInfo %x, aluRes: %x, trgtAddr: %x", myProcessor.ALU.aluOp, myProcessor.ALU.operand1, myProcessor.ALU.operand2, myProcessor.ALU.jump, myProcessor.ALU.branch, myProcessor.ALU.pc, myProcessor.ALU.addrInfo, myProcessor.ALU.aluResult, myProcessor.ALU.targetAddr);
+      $display("IFPipeReg PC:%d, Instr:%x", myProcessor.PCReg.PCin, myProcessor.IFPipeReg.instrOut);
+      $display("IDPipeReg PC:%d aluSel:%x wSel:%x aluOp:%x memWrite:%x rDataSel:%x rWrite:%x jmp:%x br:%x rsv:%x, rtv:%x, addrInfo:%x, isMemRead:%x",
+           myProcessor.IDPipeReg.pcOut, myProcessor.IDPipeReg.aluSelOut, myProcessor.IDPipeReg.wSelOut, myProcessor.IDPipeReg.aluOpOut, 
+           myProcessor.IDPipeReg.memWriteOut, myProcessor.IDPipeReg.rDataSelOut, myProcessor.IDPipeReg.rWriteOut, myProcessor.IDPipeReg.jmpOut, myProcessor.IDPipeReg.brOut, myProcessor.IDPipeReg.rsOut, myProcessor.IDPipeReg.rtOut, myProcessor.honestToGoodness.outData, myProcessor.IDPipeReg.rDataSelOut);
+      $display("EXPipeReg br:%x memWrite:%x rDataSel:%x rWrite:%x result:%x dst:%x ddr:%x isMemRead:%x", myProcessor.EXPipeReg.brOut, 
+           myProcessor.EXPipeReg.memWriteOut, myProcessor.EXPipeReg.rDataSelOut, myProcessor.EXPipeReg.rWriteOut, myProcessor.EXPipeReg.resultOut, 
+           myProcessor.EXPipeReg.dstOut, myProcessor.EXPipeReg.ddrOut, `P.EXPipeReg.rDataSelOut);
+      $display("MEMPipeReg memWrite:%x data:%x dst:%x", myProcessor.MEMPipeReg.rWriteOut, myProcessor.MEMPipeReg.dataOut, 
+           myProcessor.MEMPipeReg.dstOut); 
+       $display("alu: %x, in2: %x, muxSEL: %x", `P.camel.inData1, `P.camel.inData2, `P.camel.Select);
    end
 endmodule
 

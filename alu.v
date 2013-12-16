@@ -19,7 +19,12 @@ output reg [31:0] aluResult, targetAddr;
    // 5: Output set to TRUE if operand1 is less than operand2 interpreted as unsigned integers; else set to FALSE.
    // 6: Output set to TRUE if operands are equal; else set to FALSE.
    // 7: Output set to TRUE if operand1 is less than operand2 interpreted as signed integers; else set to FALSE.
-      
+
+    initial begin
+        aluResult = 0;
+        targetAddr = 0;
+    end
+
 always @(*)
 begin
 	case (aluOp)

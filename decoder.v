@@ -2,7 +2,6 @@
 //  Define  macros like the following commented block. That alllows you to use  meangful symbolic names (rather than 
 // hard-to-parse and easy to  mangle) bit strings in the main code.
 
-
 //Macros
 //Defined as their opcodes
 `define RType 6'h0
@@ -59,7 +58,7 @@ output wire wbEnable, memRead, memWrite, iType, isBranch, isJump;
 	assign isJump	 =	(`JMP == `OPCODE);
 	assign memRead	 =	(`LOAD == `OPCODE);
 	assign memWrite =	(`STORE == `OPCODE);
-	assign wbEnable =	(`OPCODE == `RType || `OPCODE == `ADDI || `OPCODE == `LOAD);
+	assign wbEnable =	((`OPCODE == `RType && `FUNCT != 0) || `OPCODE == `ADDI || `OPCODE == `LOAD);
 	assign iType	 =	(`OPCODE == `ADDI || `OPCODE == `LOAD || `OPCODE == `STORE);
 	assign writeReg =	(`OPCODE == `RType ? `R_D : `R_T);
 	assign addrInfo =	 `ADDRINFO;

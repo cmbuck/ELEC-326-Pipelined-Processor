@@ -24,7 +24,7 @@ module dataMemory(MemRead, MemWrite, Address, StoreValue, LoadValue);
 	 TEMP = i/4 + 1;
 	{DATAMEM[i],DATAMEM[i+1],DATAMEM[i+2],DATAMEM[i+3]} = TEMP;
       end
-end
+    end
 
 
    assign LoadValue  = (MemRead == 1) ? `MEM_WORD_AT_ADDRESS  : 32'hx;
