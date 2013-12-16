@@ -11,7 +11,7 @@ module mux_2input_32bit(Select, inData1, inData2, outData);
    output wire [31:0] outData;
    
    /* NOTE: when Select is 0 the first input (inData[63:31]) is selected */
-   assign outData = Select?inData1:inData2;
+   assign outData = Select?inData2:inData1;
    
 endmodule // Mux_64_32bit
 
@@ -37,7 +37,16 @@ module mux_2input_5bit(Select, inData1, inData2, outData);
    input wire [4:0] inData1, inData2;
    output wire [4:0] outData;
      
-   assign outData = Select?inData1:inData2;
+   assign outData = Select?inData2:inData1;
    
 endmodule // Mux_10_5bit
 
+module mux_2input_26bit(Select, inData1, inData2, outData);
+
+   input wire Select;
+   input wire [25:0] inData1, inData2;
+   output wire [25:0] outData;
+
+   assign outData = Select?inData2:inData1;
+  
+endmodule // mux_2input_26bit
