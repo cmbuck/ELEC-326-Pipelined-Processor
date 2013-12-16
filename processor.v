@@ -54,13 +54,14 @@ module processor(clk);
     wire [31:0]  aluResultALUOut, aluResultEXRegOut;
     wire [31:0]  targetAddrALUOut, targetAddrEXRegOut;
 
-    wire [4:0]   dstRegAddrVarmanOut, dstRegAddrEXRegOut;
+    wire [4:0]   dstRegAddrVarmanOut, dstRegAddrEXRegOut, dstRegAddrMEMRegOut;
 
     wire [31:0]  loadValDataMemoryOut;
 
-    wire [31:0]  regWriteDataCamelOut;
+    wire [31:0]  regWriteDataCamelOut, regWriteDataMEMRegOut;
 
     wire         isBranching;
+
 
     pcReg PCReg(clk, pcRegIn, pcRegOut);
     insMemory InsMemory(pcRegOut, instruction);
@@ -77,7 +78,7 @@ module processor(clk);
 
     insDecoder INSDecoder(instructionIFRegOut, addrInfoOut, aluOpDecoderOut, isWriteRegDecoderOut, isMemReadDecoderOut, isMemWriteDecoderOut, isITypeDecoderOut, isWbEnableDecoderOut, isBranchDecoderOut, isJumpDecoderOut);
 
-    s_regFile(clk, rsIFRegOut, rtIFRegOut, /*TODO dstReg, writeData, writeEnable*/ rsValRegFileOut, rtValRegFileOut);
+    s_regFile(clk, rsIFRegOut, rtIFRegOut, regWriteMEMRegOut, regWriteDataMEMRegOut, isWbEnableMEMRegOut, rsValRegFileOut, rtValRegFileOut);
 
     idPipeReg IDPipeReg(clk, pcIFRegOut, pcIDRegOut, isITypeDecoderOut, isITypeIDRegOut, isWriteRegDecoderOut, isWriteRegIDRegOut, aluOpDecoderOut, aluOpIDRegOut, isMemWriteDecoderOut, isMemWriteIDRegOut, isMemReadDecoderOut, isMemreadIDRegOut, isWbEnableDecoderOut, isWbEnableIDRegOut, isJumpDecoderOut, isJumpIDRegOut, isBranchDecoderOut, isBranchIDRegOut, immediateIFRegOut, immediateIDRegOut, instructionIFRegOut[25:0], jumpAddrIDRegOut);
 
@@ -101,6 +102,7 @@ module processor(clk);
     assign isBranching = isBranchEXRegOut & aluResultEXRegOut[0];
 
 
+    memPipeReg MEMPipeReg(clk, isWbEnableEXRegOut, isWbEnableMEMRegOut, regWriteDataCamelOut, regWriteDataMEMRegOut, regWriteDataCamelOut, regWriteMEMRegOut);
 
 
     initial begin
@@ -192,22 +194,22 @@ module exPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSel
     end
 endmodule
 
-module memPipeReg(clk, memWriteIn, memWriteOut, dataIn, dataOut, dstIn, dstOut);
+module memPipeReg(clk, rWriteIn, rWriteOut, dataIn, dataOut, dstIn, dstOut);
     // memCntrl (just write)
     // [31:0] data
     // [2:0] dst
-    input clk, memWriteIn;
+    input clk, rWriteIn;
     input [31:0] dataIn;
     input [5:0] dstIn;
 
-    output reg memWriteOut;
+    output reg rWriteOut;
     output reg [31:0] dataOut;
     output reg [31:0] dstOut;
 
     always @(posedge clk) begin
         dataOut <= dataIn;
         dstOut <= dstIn;
-        memWriteOut <= memWriteIn;
+        rWriteOut <= rWriteIn;
     end
 endmodule
 
