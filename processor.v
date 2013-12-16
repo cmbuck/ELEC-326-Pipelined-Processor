@@ -33,6 +33,7 @@ module processor(clk);
     wire [5:0]   rsIFRegOut;
     wire [5:0]   rtIFRegOut, rtIDRegOut;
     wire [5:0]   rdIFRegOut, rdIDRegOut;
+    wire [15:0]  immediateIFRegOut, immediateIDRegOut;
 
     wire [25:0]  addrInfoOut; //used in the event of a jump
     wire [2:0]   aluOpDecoderOut,  aluOpIDRegOut;
@@ -42,45 +43,42 @@ module processor(clk);
     wire         isITypeDecoderOut,    isITypeIDRegOut;
     wire         isWbEnableDecoderOut, isWbEnableIDRegOut,  isWbEnableEXRegOut, isWbEnableMEMRegOut;
     wire         isBranchDecoderOut,   isBranchIDRegOut,    isBranchEXRegOut;
-    wire         isJumpDecoderOut;
+    wire         isJumpDecoderOut,     isJumpIDRegOut;
 
     wire [31:0]  rsValRegFileOut, rsValIDRegOut;
-    wire [31:0]  rtValRegFileOut, rtValIDRegOut;
+    wire [31:0]  rtValRegFileOut, rtValIDRegOut, rtValEXRegOut;
 
-    //wire [11:0]  PipeReg1Bus; //connects output of decoder to PipeReg1
-    //wire [2:0]   aluOp; //connected to intput of ALU
-    //wire         ALUsel; //connected to mux before ALU
-    //wire         WSel;
-    //wire         MemRead; //goes into DataMem
-    //wire         MemWrite; //goes into DataMem
-    //wire [15:0]  Immediate; //immediate value in the instruction
-    //wire [4:0]   DstReg; //input to DST, output of MUX after rt and rd
-    //wire [31:0]  TargetAddr; //output of ALU, input of DDR
-    //wire [31:0]  Result; //output of ALU
-    //wire [31:0]  rt_mux_input;
-    //wire [31:0]  rs_mux_input;
+    wire [31:0]  aluResultALUOut;
+    wire [31:0]  targetAddrALUOut;
 
-    //dataMemory DataMemory(MemRead, MemWrite, TargetAddr, StoreValue, LoadValue);
-    //alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
+    wire [4:0]   writeRegVarmanOut;
 
     pcReg PCReg(clk, pcRegIn, pcRegOut);
     insMemory InsMemory(pcRegOut, instruction);
     pcAdder PCAdder(pcRegOut, pcPlusFour);
-    mux_3input_32bit(/*TODO select*/, pcPlusFour, /*TODO something1*/, /*TODO something2*/, /*TODO outData*/);
+    mux_3input_32bit masoud({/*TODO something*/, isJumpDecoderOut}, pcPlusFour, /*TODO something1*/, {pcIFRegOut[31:28], instructionIFRegOut[25:0], 2'h0}, pcRegIn);
 
     ifPipeReg IFPipeReg(clk, pcPlusFour, pcIFRegOut, instruction, instructionIFRegOut);
 
     assign rsIFRegOut = instructionIFRegOut[25:21];
     assign rtIFRegOut = instructionIFRegOut[20:16];
     assign rdIFRegOut = instructionIFRegOut[15:11];
+    assign immediateIFRegOut = instructionIFRegOut[15:0];
 
     insDecoder INSDecoder(instructionIFRegOut, addrInfoOut, aluOpDecoderOut, isWriteRegDecoderOut, isMemReadDecoderOut, isMemWriteDecoderOut, isITypeDecoderOut, isWbEnableDecoderOut, isBranchDecoderOut, isJumpDecoderOut);
 
     s_regFile(clk, rsIFRegOut, rtIFRegOut, /*TODO dstReg, writeData, writeEnable*/ rsValRegFileOut, rtValRegFileOut);
 
-    idPipeReg IDPipeReg(clk, pcIFRegOut, pcIDRegOut, isITypeDecoderOut, isITypeIDRegOut, isWriteRegDecoderOut, isWriteRegIDRegOut, aluOpDecoderOut, aluOpIDRegOut, isMemWriteDecoderOut, isMemWriteIDRegOut, isMemReadDecoderOut, isMemreadIDRegOut, isWbEnableDecoderOut, isWbEnableIDRegOut, isJumpDecoderOut, isJumpIDRegOut, isBranchDecoderOut, isBranchIDRegOut);
+    idPipeReg IDPipeReg(clk, pcIFRegOut, pcIDRegOut, isITypeDecoderOut, isITypeIDRegOut, isWriteRegDecoderOut, isWriteRegIDRegOut, aluOpDecoderOut, aluOpIDRegOut, isMemWriteDecoderOut, isMemWriteIDRegOut, isMemReadDecoderOut, isMemreadIDRegOut, isWbEnableDecoderOut, isWbEnableIDRegOut, isJumpDecoderOut, isJumpIDRegOut, isBranchDecoderOut, isBranchIDRegOut, immediateIFRegOut, immediateIDRegOut);
 
+    // EX section
+    mux_2input_32bit abraham(isITypeIDRegOut, rtValIDRegOut, {{16{immediateIDRegOut[15]}}, immediateIDRegOut}, outData);
 
+    alu ALU(aluOpIDRegOut, rsValIDRegOut, rtValIDRegOut, isJumpIDRegOut, isBranchIDRegOut, pcIDRegOut, immediateIDRegOut, aluResultALUOut, targetAddrALUOut);
+
+    mux_2input_5bit varman(isWriteRegIDRegOut, rtIDRegOut, rdIDRegOut, writeRegVarmanOut);
+
+    exPipeReg EXPipeReg(clk, brIn, brOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, resultIn, resultOut, dstIn, dstOut, ddrIn, ddrOut);
 
 
     initial begin
@@ -114,7 +112,7 @@ module ifPipeReg(clk, pcIn, pcOut, instrIn, instrOut);
     end
 endmodule
 
-module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut);
+module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn, aluOpOut, memWriteIn, memWriteOut, rDataSelIn, rDataSelOut, rWriteIn, rWriteOut, jmpIn, jmpOut, brIn, brOut, immediateIn, immediateOut);
     // The following are contained in this module:
     // [31:0] pc
     // [10:0] IDCntrl - aluSet, wSel, aluOp(this guy is 3 bits long), memWrite, rDataSel, rWrite, jmp, br
@@ -122,9 +120,11 @@ module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn
     input clk, aluSelIn, wSelIn, memWriteIn, rDataSelIn, rWriteIn, jmpIn, brIn;
     input [31:0] pcIn;
     input [3:0] aluOpIn;
+    input [15:0] immediateIn;
     output reg aluSelOut, wSelOut, memWriteOut, rDataSelOut, rWriteOut, jmpOut, brOut;
     output reg [31:0] pcOut;
-    output [3:0] aluOpOut;
+    output reg [3:0] aluOpOut;
+    output reg [15:0] immediateOut;
 
     always @(posedge clk) begin
         aluSelOut <= aluSelIn;
@@ -136,6 +136,7 @@ module idPipeReg(clk, pcIn, pcOut, aluSelIn, aluSelOut, wSelIn, wSelOut, aluOpIn
         rWriteOut <= rWriteIn;
         jmpOut <= jmpIn;
         brOut <= brIn;
+        immediateOut <= immediateIn;
     end
 
 endmodule
@@ -194,4 +195,22 @@ module pcReg(clk, PCin, PCout);
    end
    
 endmodule // PC
+
+//seannned
+    //wire [11:0]  PipeReg1Bus; //connects output of decoder to PipeReg1
+    //wire [2:0]   aluOp; //connected to intput of ALU
+    //wire         ALUsel; //connected to mux before ALU
+    //wire         WSel;
+    //wire         MemRead; //goes into DataMem
+    //wire         MemWrite; //goes into DataMem
+    //wire [15:0]  Immediate; //immediate value in the instruction
+    //wire [4:0]   DstReg; //input to DST, output of MUX after rt and rd
+    //wire [31:0]  TargetAddr; //output of ALU, input of DDR
+    //wire [31:0]  Result; //output of ALU
+    //wire [31:0]  rt_mux_input;
+    //wire [31:0]  rs_mux_input;
+
+    //dataMemory DataMemory(MemRead, MemWrite, TargetAddr, StoreValue, LoadValue);
+    //alu ALU(aluOp, operand1, operand2, jmp, br, pc, addrInfo, aluResult, TargetAddr);
+
 
